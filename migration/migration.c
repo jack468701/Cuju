@@ -43,9 +43,11 @@
 #include "migration/buffered_file.h"
 #include "qemu/main-loop.h"
 #include "migration/event-tap.h"
+#include "net/tap-linux.h"  //Cuju
 #include "hw/virtio/virtio-blk.h"
 #include <sys/time.h>
 #include <signal.h>
+#include <sys/ioctl.h>  //Cuju
 //#define DEBUG_MIGRATION
 static unsigned long trans_serial = 0;
 static unsigned long run_serial = 0;
@@ -2314,6 +2316,39 @@ int migrate_fd_get_buffer(void *opaque, uint8_t *data, int64_t pos, size_t size)
     return ret;
 }
 
+//Cuju
+int ft_setup_migrate_buffer(int state)
+{
+    int fd, ret = 0;
+    TFR(fd = open("/dev/net/tun", O_RDWR));
+    if (fd < 0) {
+        printf("could not open\n");
+        return -1;
+    }
+
+    if (state == 1) {
+        ret = ioctl(fd, TUNSETFTINIT);
+        printf("buffer init!!!\n");
+    } else if (state == 2) {
+        ret = ioctl(fd, TUNNEXTEPOCH);
+        printf("switch epoch!!\n");
+    } else if (state == 3) {
+        ret = ioctl(fd, TUNFLUSH);
+        printf("buffer flush!!\n");
+    } else if (state == 4) {
+        ret = ioctl(fd, TUNSTARTRECV);
+        printf("start recv!!\n");
+    } else if (state == 5) {
+        ret = ioctl(fd, TUNSTOPRECV);
+        printf("stop recv!!\n");
+    } else if (state == 6) {
+        ret = ioctl(fd, TUNTRANSFER);
+        printf("transfer!!\n");
+    }
+    close(fd);
+    return ret;
+}
+
 static void send_commit1(MigrationState *s)
 {
     // TODO what if snapshot stage isn't finished yet?
@@ -2379,6 +2414,7 @@ static void kvmft_flush_output(MigrationState *s)
         kvm_blk_epoch_commit(kvm_blk_session);
 	*/
 
+    ft_setup_migrate_buffer(3);
     virtio_blk_commit_temp_list(s->virtio_blk_temp_list);
     s->virtio_blk_temp_list = NULL;
     s->net_list_empty = event_tap_net_list_empty(s->ft_event_tap_net_list);
@@ -2686,6 +2722,7 @@ static void *migration_thread(void *opaque)
 		printf("start cuju process\n");
 		ft_setup_migrate_state(s, 0);
         ft_setup_migrate_state(s2, 1);
+        ft_setup_migrate_buffer(1);
 
 		event_tap_register(NULL);
 

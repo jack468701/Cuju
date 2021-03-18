@@ -47,6 +47,8 @@
 #include "hw/nmi.h"
 #include "sysemu/replay.h"
 
+#include "migration/migration.h" //cuju
+
 #ifndef _WIN32
 #include "qemu/compatfd.h"
 #endif
@@ -1508,6 +1510,7 @@ void vm_stop_mig(void)
     ft_stopped_cpus = true;
     cpu_disable_ticks();
     pause_all_vcpus();
+    ft_setup_migrate_buffer(5);
 }
 
 void vm_start_mig(void)
@@ -1515,6 +1518,7 @@ void vm_start_mig(void)
     ft_stopped_cpus = false;
     cpu_enable_ticks();
     resume_all_vcpus();
+    ft_setup_migrate_buffer(4);
 }
 
 /* does a state transition even if the VM is already stopped,

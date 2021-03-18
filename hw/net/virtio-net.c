@@ -1301,10 +1301,10 @@ static int32_t virtio_net_flush_tx(VirtIONetQueue *q)
             out_sg = sg;
         }
 
-        //ret = qemu_sendv_packet_async(qemu_get_subqueue(n->nic, queue_index),
-        //                              out_sg, out_num, virtio_net_tx_complete);
-        ret = qemu_sendv_packet_async_proxy(qemu_get_subqueue(n->nic, queue_index),
+        ret = qemu_sendv_packet_async(qemu_get_subqueue(n->nic, queue_index),
                                       out_sg, out_num, virtio_net_tx_complete);
+        //ret = qemu_sendv_packet_async_proxy(qemu_get_subqueue(n->nic, queue_index),
+        //                              out_sg, out_num, virtio_net_tx_complete);
         if (ret == 0) {
             virtio_queue_set_notification(q->tx_vq, 0);
             q->async_tx.elem = elem;
@@ -1862,11 +1862,11 @@ static void virtio_net_instance_init(Object *obj)
 
 static void virtio_net_pre_save(void *opaque)
 {
-    VirtIONet *n = opaque;
+    //VirtIONet *n = opaque;
 
     /* At this point, backend must be stopped, otherwise
      * it might keep writing to memory. */
-    assert(!n->vhost_started);
+    //assert(!n->vhost_started);
 }
 
 static const VMStateDescription vmstate_virtio_net = {

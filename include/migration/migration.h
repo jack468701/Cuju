@@ -30,6 +30,7 @@
 //#define ASYNC_INIT_MIGRATION
 extern int delay_more_than_two_epoch;
 #define DIRTY_RATIO 10
+int ft_setup_migrate_buffer(int state);
 struct CUJUFTDev
 {
     QEMUFile *ft_dev_file;
