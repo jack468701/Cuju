@@ -44,6 +44,8 @@
 #include "net/tap.h"
 
 #include "net/vhost_net.h"
+/* Cuju support vhost : set tap fd function header */
+#include "migration/migration.h"
 
 typedef struct TAPState {
     NetClientState nc;
@@ -897,6 +899,8 @@ free_fail:
             if (fd == -1) {
                 return -1;
             }
+            /* Cuju support vhost : set tap fd */
+            set_cuju_tap_fd(fd);
 
             if (queues > 1 && i == 0 && !tap->has_ifname) {
                 if (tap_fd_get_ifname(fd, ifname)) {

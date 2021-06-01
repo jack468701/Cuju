@@ -31,6 +31,12 @@
 #define TUNSETQUEUE  _IOW('T', 217, int)
 #define TUNSETVNETLE _IOW('T', 220, int)
 #define TUNSETVNETBE _IOW('T', 222, int)
+#define TUNSETFTINIT  _IOW('T', 230, int)
+#define TUNNEXTEPOCH  _IOW('T', 231, int)
+#define TUNFLUSH      _IOW('T', 232, int)
+#define TUNSTARTRECV  _IOW('T', 233, int)
+#define TUNSTOPRECV   _IOW('T', 234, int)
+#define TUNRELEASE    _IOW('T', 235, int)
 
 #endif
 

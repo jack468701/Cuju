@@ -43,9 +43,13 @@
 #include "migration/buffered_file.h"
 #include "qemu/main-loop.h"
 #include "migration/event-tap.h"
+#include "net/tap-linux.h" /* Cuju support vhost : get tap ioctl request */
 #include "hw/virtio/virtio-blk.h"
 #include <sys/time.h>
 #include <signal.h>
+#include <sys/ioctl.h>  /* Cuju support vhost : ioctl function header */
+#include "hw/virtio/virtio-net.h"   /* Cuju support vhost : set vhost start/stop - declaration */
+
 //#define DEBUG_MIGRATION
 static unsigned long trans_serial = 0;
 static unsigned long run_serial = 0;
@@ -137,6 +141,25 @@ int delay_more_than_two_epoch = 0;
 #define FTPRINTF(fmt, ...) \
     do { } while (0)
 #endif
+
+/*
+ * cuju support vhost : vhost get device - definition
+ */
+int cuju_tap_fd;
+VirtIONet *cuju_n;
+
+void set_cuju_tap_fd(int fd)
+{
+       cuju_tap_fd = fd;
+       printf("tap fd=%d\n", cuju_tap_fd);
+}
+
+void set_cuju_vhost_n(void *n)
+{
+       cuju_n = n;
+       printf("Get n=%p\n", cuju_n);
+}
+
 static void migrate_assert_ft_state_change(int f, int t)
 {
     if (f == CUJU_FT_OFF)
@@ -2318,6 +2341,58 @@ int migrate_fd_get_buffer(void *opaque, uint8_t *data, int64_t pos, size_t size)
     return ret;
 }
 
+/* Cuju support vhost : main handle function */
+void ft_setup_migrate_buffer(int state)
+{
+    int fd = cuju_tap_fd, ret = 0;
+    static int start_ft = 0;
+
+    switch (state) {
+    case CUJU_BUFFER_INIT:
+        ret = ioctl(fd, TUNSETFTINIT);
+        start_ft++;
+        printf("buffer init!!!\n");
+        break;
+
+    case CUJU_BUFFER_SWITCH:
+        ret = ioctl(fd, TUNNEXTEPOCH);
+        break;
+
+    case CUJU_BUFFER_FLUSH:
+        ret = ioctl(fd, TUNFLUSH);
+        break;
+
+    case CUJU_VHOST_START:
+        /* Exit snapshot state */
+        if (start_ft > 1) {
+            ret = ioctl(fd, TUNSTARTRECV);
+            cuju_virtio_net_vhost_status(cuju_n, RUN_STATE_RUNNING);
+        } else if (start_ft == 1) {
+            printf("start_ft %d\n", start_ft);
+            start_ft++;
+        }
+        break;
+
+    case CUJU_VHOST_STOP:
+        /* Enter snapshot state */
+        if (start_ft > 1) {
+            ret = ioctl(fd, TUNSTOPRECV);
+            cuju_virtio_net_vhost_status(cuju_n, RUN_STATE_FINISH_MIGRATE);
+        }
+        break;
+
+    case CUJU_BUFFER_RELEASE:
+        if (start_ft > 1) {
+            printf("tun release\n");
+            ret = ioctl(fd, TUNRELEASE);
+        }
+        break;
+    }
+
+    if (ret < 0)
+        printf("%s %d ioctl fail\n", __func__, state);
+}
+
 static void send_commit1(MigrationState *s)
 {
     // TODO what if snapshot stage isn't finished yet?
@@ -2383,6 +2458,10 @@ static void kvmft_flush_output(MigrationState *s)
         kvm_blk_epoch_commit(kvm_blk_session);
 	*/
 
+    /*
+	 * cuju support vhost : flush output buffer
+	 */
+    ft_setup_migrate_buffer(CUJU_BUFFER_FLUSH);
     virtio_blk_commit_temp_list(s->virtio_blk_temp_list);
     s->virtio_blk_temp_list = NULL;
     s->net_list_empty = event_tap_net_list_empty(s->ft_event_tap_net_list);

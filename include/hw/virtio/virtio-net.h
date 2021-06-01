@@ -101,4 +101,7 @@ typedef struct VirtIONet {
 void virtio_net_set_netclient_name(VirtIONet *n, const char *name,
                                    const char *type);
 
+/* Cuju support vhost : set vhost start/stop - declaration */
+void cuju_virtio_net_vhost_status(VirtIONet *n, uint8_t status);
+
 #endif

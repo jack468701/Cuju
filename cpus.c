@@ -47,6 +47,9 @@
 #include "hw/nmi.h"
 #include "sysemu/replay.h"
 
+/* Cuju support vhost : include vhost start/stop function header */
+#include "migration/migration.h"
+
 #ifndef _WIN32
 #include "qemu/compatfd.h"
 #endif
@@ -1508,6 +1511,10 @@ void vm_stop_mig(void)
     ft_stopped_cpus = true;
     cpu_disable_ticks();
     pause_all_vcpus();
+    /*
+	 * cuju support vhost : cuju vhost stop
+	 */
+    ft_setup_migrate_buffer(CUJU_VHOST_STOP);
 }
 
 void vm_start_mig(void)
@@ -1515,6 +1522,10 @@ void vm_start_mig(void)
     ft_stopped_cpus = false;
     cpu_enable_ticks();
     resume_all_vcpus();
+    /*
+	 * cuju support vhost : cuju vhost start
+	 */
+    ft_setup_migrate_buffer(CUJU_VHOST_START);
 }
 
 /* does a state transition even if the VM is already stopped,

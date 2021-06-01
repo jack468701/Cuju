@@ -30,6 +30,22 @@
 //#define ASYNC_INIT_MIGRATION
 extern int delay_more_than_two_epoch;
 #define DIRTY_RATIO 10
+/*
+ * cuju support vhost : vhost get device - declaration
+ */
+void set_cuju_tap_fd(int fd);
+void set_cuju_vhost_n(void *n);
+/*
+ * cuju support vhost : vhost stop & start - declaration
+ */
+#define CUJU_BUFFER_INIT    1
+#define CUJU_BUFFER_SWITCH  2
+#define CUJU_BUFFER_FLUSH   3
+#define CUJU_VHOST_START    4
+#define CUJU_VHOST_STOP     5
+#define CUJU_BUFFER_RELEASE 6
+void ft_setup_migrate_buffer(int state);
+
 struct CUJUFTDev
 {
     QEMUFile *ft_dev_file;

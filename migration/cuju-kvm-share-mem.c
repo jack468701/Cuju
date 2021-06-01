@@ -280,6 +280,8 @@ void kvm_shmem_start_ft(void)
         fprintf(stderr, "%s failed: %d\n", __func__, ret);
         exit(ret);
     }
+    /* cuju support vhost : set ftmode - start */
+    ft_setup_migrate_buffer(CUJU_BUFFER_INIT);
 
     ft_started = 1;
 }

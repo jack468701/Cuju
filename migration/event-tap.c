@@ -912,6 +912,8 @@ void event_tap_start_epoch(void *net_list, void *blk_list, void *old_net_list, v
 	assert(net_event_list->head == net_event_list->tail);
 	net_event_list->head = 0;
 	net_event_list->tail = 0;
+    /* cuju support vhost : switch epoch */
+    ft_setup_migrate_buffer(CUJU_BUFFER_SWITCH);
 
     QTAILQ_INIT(event_list);
 	// NOTE _old is useless right now
