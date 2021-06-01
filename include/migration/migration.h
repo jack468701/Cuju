@@ -30,6 +30,20 @@
 //#define ASYNC_INIT_MIGRATION
 extern int delay_more_than_two_epoch;
 #define DIRTY_RATIO 10
+
+/*
+ * cuju support vhost : vhost get device - declaration
+ */
+void set_cuju_get_vhost(bool);
+void set_cuju_vhost_addr(void*);
+bool get_cuju_get_vhost(void);
+void *get_cuju_vhost_addr(void);
+
+/*
+ * cuju support vhost : vhost stop & start - declaration
+ */
+void cuju_vhost_vm_state_notify(int, int);
+
 struct CUJUFTDev
 {
     QEMUFile *ft_dev_file;

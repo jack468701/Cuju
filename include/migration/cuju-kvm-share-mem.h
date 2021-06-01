@@ -24,6 +24,13 @@
 #define PAGES_PER_MS        200
 #define SHARED_DIRTY_SIZE   10000
 #define SHARED_DIRTY_WATERMARK  9600
+
+/*
+ * cuju support vhost : for cuju vhost global
+ */
+extern int cuju_vhost_start_ft;
+extern int cuju_vhost_epoch_ret;
+
 //#define DLIST_TEST_MODE
 extern int migrate_cancel;
 bool cuju_supported(void);
@@ -78,6 +85,13 @@ void kvm_shmem_load_ram_with_hdr(void *buf, int size, void *hdr_buf, int hdr_siz
 void kvm_shmem_load_ram(void *buf, int size);
 void* kvm_shmem_map_pfn(unsigned long pfn, unsigned long size);
 void kvm_shmem_unmap_pfn(void *ptr, unsigned long size);
+
+/*
+ * cuju support vhost : cuju -> kvm_ioctl - declaration
+ */
+int cuju_kvm_vhost_set_ftmode(int flag);
+void cuju_kvm_vhost_set_flush(int arg);
+int cuju_kvm_vhost_set_snapshot(int flag);
 
 int show_ft_started (void);
 
